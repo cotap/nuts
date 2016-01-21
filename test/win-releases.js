@@ -1,25 +1,8 @@
 var should = require('should');
+var assert = require('assert');
 var winReleases = require('../lib/win-releases');
 
 describe('Windows RELEASES', function() {
-
-    describe('Version Normalization', function() {
-
-        it('should not changed version without pre-release', function() {
-            winReleases.normVersion('1.0.0').should.be.exactly('1.0.0');
-            winReleases.normVersion('4.5.0').should.be.exactly('4.5.0');
-            winReleases.normVersion('67.8.345').should.be.exactly('67.8.345');
-        });
-
-        it('should normalize the pre-release', function() {
-            winReleases.normVersion('1.0.0-alpha.1').should.be.exactly('1.0.0.1001');
-            winReleases.normVersion('1.0.0-beta.1').should.be.exactly('1.0.0.2001');
-            winReleases.normVersion('1.0.0-unstable.1').should.be.exactly('1.0.0.3001');
-            winReleases.normVersion('1.0.0-rc.1').should.be.exactly('1.0.0.4001');
-            winReleases.normVersion('1.0.0-14').should.be.exactly('1.0.0.14');
-        });
-
-    });
 
     describe('Parsing', function() {
         var releases = winReleases.parse(
@@ -62,6 +45,23 @@ describe('Windows RELEASES', function() {
         it('should correctly parse versions', function() {
             releases[0].version.should.be.exactly("0.178.0");
             releases[1].version.should.be.exactly("0.178.1");
+        });
+
+    });
+
+    describe('Parsing pre-releases', function() {
+        var releases = winReleases.parse(
+            '62E8BF432F29E8E08240910B85EDBF2D1A41EDF2 atom-0.178.0-beta.20160120.1-full.nupkg 81272434\n'
+        );
+
+        it('should correctly parse versions', function() {
+            releases[0].version.should.be.exactly('0.178.0-beta201601201');
+        });
+
+        it('should throw an appropriate error if a release has no version info', function() {
+            var releaseWithNoVersion = '62E8BF432F29E8E08240910B85EDBF2D1A41EDF2 atom-full.nupkg 81272434\n'
+            assert.throws(winReleases.parse.bind(winReleases, releaseWithNoVersion),
+                Error, 'Release missing valid version: atom-full.nupkg');
         });
 
     });
