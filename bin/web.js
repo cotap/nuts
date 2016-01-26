@@ -112,3 +112,12 @@ app.use(function(err, req, res, next) {
 var server = app.listen(PORT, HOST, function () {
     console.log('Listening at http://%s:%s%s', HOST, PORT, BASE_URL);
 });
+
+process.on('SIGTERM', function() {
+    // runit sends a SIGTERM, then waits 10 seconds and, if necessary,
+    // sends a SIGKILL.  This lets us shut down gracefully.
+    server.close(function() {
+        console.log('Closed all server connections.');
+        process.exit(0);
+    });
+});
