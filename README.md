@@ -1,3 +1,4 @@
+**This project requires Node.js 22.x LTS or newer.**
 # Nuts
 
 Nuts is a simple (and smart) application to serve desktop-application releases.

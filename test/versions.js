@@ -1,16 +1,15 @@
-var
-  _ = require('lodash'),
-  Q = require('q'),
-  should = require('should'),
-  rewire = require('rewire');
+import _ from 'lodash';
+import Q from 'q';
+import should from 'should';
+import Versions, { newVersionFilter, allVersionFilter } from '../lib/versions.js';
 
 describe('Versions', function() {
 
-  var Versions = rewire('../lib/versions');
+  // Versions is now imported as an ES module above
 
   describe('when extracting a channel from a tag', function() {
 
-    var mockGithubReleases = [
+    const mockGithubReleases = [
       {
         expectations: {
           channel: 'alpha'
@@ -81,7 +80,7 @@ describe('Versions', function() {
 
     _.map(mockGithubReleases, function(release) {
 
-      var versions = Versions({
+      const versions = Versions({
         releases: function() {
           return Q.fcall(function() {
             return [release.data];
@@ -89,7 +88,7 @@ describe('Versions', function() {
         }
       });
 
-      var expectedChannel = release.expectations.channel,
+      const expectedChannel = release.expectations.channel,
         tag = release.data.tag_name;
 
       it('should get channel ' + expectedChannel + ' from tag ' + tag, function(done) {
@@ -107,17 +106,17 @@ describe('Versions', function() {
 
     function testVersionFilter(filterName, scenarios) {
       describe('with ' + filterName, function() {
-        var filterFunction = Versions.__get__(filterName);
+        const filterFunction = filterName === 'newVersionFilter' ? newVersionFilter : allVersionFilter;
 
         scenarios.forEach(function(scenario) {
-          var opts = scenario.opts,
+          const opts = scenario.opts,
             description = 'with opts = { tag: ' + opts.tag + ', channel: ' + opts.channel
               + ', platform: ' + opts.platform + ' }, return -> [' + scenario.expectation.join(', ') + ']';
 
           it(description, function() {
-            var result = _.chain(testVersions)
+            _.chain(testVersions)
               .filter(filterFunction(scenario.opts))
-              .pluck('tag')
+              .map('tag')
               .value()
               .join(', ')
               .should.equal(scenario.expectation.join(', '));
@@ -126,7 +125,7 @@ describe('Versions', function() {
       });
     }
 
-    var testVersions = [
+    const testVersions = [
       { tag: '0.0.8-alpha.1',
         channel: 'alpha',
         notes: 'More placeholder text.',
