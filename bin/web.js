@@ -1,32 +1,32 @@
-var express = require('express');
-var uuid = require('uuid');
-var basicAuth = require('basic-auth');
-var Analytics = require('analytics-node');
-var nuts = require('../');
+import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import basicAuth from 'basic-auth';
+import Analytics from 'analytics-node';
+import nuts from '../lib/index.js';
 
 const
     BASE_URL    = process.env.BASE_URL || '/',
     PORT        = process.env.PORT || 5000,
-    HOST        = process.env.HOST || '0.0.0.0'
+    HOST        = process.env.HOST || '0.0.0.0',
     TRUST_PROXY = process.env.TRUST_PROXY;
 
-var app = express();
+const app = express();
 
 if (TRUST_PROXY) {
     app.set('trust proxy', (TRUST_PROXY === 'true') ? true : TRUST_PROXY);
 }
 
-var apiAuth =  {
+const apiAuth =  {
     username: process.env.API_USERNAME,
     password: process.env.API_PASSWORD
 };
 
-var analytics = undefined;
+let analytics = undefined;
 if (process.env.ANALYTICS_TOKEN) {
     analytics = new Analytics(process.env.ANALYTICS_TOKEN);
 }
 
-var myNuts = nuts({
+const myNuts = nuts({
     repository: process.env.GITHUB_REPO,
     token: process.env.GITHUB_TOKEN,
     username: process.env.GITHUB_USERNAME,
@@ -40,11 +40,11 @@ var myNuts = nuts({
 
         // Track on segment if enabled
         if (analytics) {
-            var userId = req.query.user;
+            const userId = req.query.user;
 
             analytics.track({
                 event: process.env.ANALYTICS_EVENT_DOWNLOAD || 'download',
-                anonymousId: userId? null : uuid.v4(),
+                anonymousId: userId ? null : uuidv4(),
                 userId: userId,
                 properties: {
                     version: download.version.tag,
@@ -63,20 +63,20 @@ var myNuts = nuts({
 
         function unauthorized(res) {
             res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-            return res.send(401);
-        };
+            return res.sendStatus(401);
+        }
 
-        var user = basicAuth(req);
+        const user = basicAuth(req);
 
         if (!user || !user.name || !user.pass) {
             return unauthorized(res);
-        };
+        }
 
         if (user.name === apiAuth.username && user.pass === apiAuth.password) {
             return next();
         } else {
             return unauthorized(res);
-        };
+        }
     }
 });
 
@@ -87,8 +87,8 @@ app.use(function(req, res, next) {
     res.status(404).send("Page not found");
 });
 app.use(function(err, req, res, next) {
-    var msg = err.message || err;
-    var code = 500;
+    const msg = err.message || err;
+    const code = 500;
 
     console.error(err.stack || err);
 
@@ -109,6 +109,6 @@ app.use(function(err, req, res, next) {
     });
 });
 
-var server = app.listen(PORT, HOST, function () {
+const server = app.listen(PORT, HOST, function () {
     console.log('Listening at http://%s:%s%s', HOST, PORT, BASE_URL);
 });

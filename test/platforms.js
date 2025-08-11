@@ -1,28 +1,28 @@
-var should = require('should');
-var platforms = require('../lib/platforms');
+import should from 'should';
+import platforms, { resolve, detect } from '../lib/platforms.js';
 
 describe('Platforms', function() {
 
     describe('Detect', function() {
 
         it('should detect osx_64', function() {
-            platforms.detect('myapp-v0.25.1-darwin-x64.zip').should.be.exactly(platforms.OSX_64);
+            detect('myapp-v0.25.1-darwin-x64.zip').should.be.exactly(platforms.OSX_64);
         });
 
         it('should detect windows_32', function() {
-            platforms.detect('myapp-v0.25.1-win32-ia32.zip').should.be.exactly(platforms.WINDOWS_32);
-            platforms.detect('atom-1.0.9-delta.nupkg').should.be.exactly(platforms.WINDOWS_32);
-            platforms.detect('RELEASES').should.be.exactly(platforms.WINDOWS_32);
+            detect('myapp-v0.25.1-win32-ia32.zip').should.be.exactly(platforms.WINDOWS_32);
+            detect('atom-1.0.9-delta.nupkg').should.be.exactly(platforms.WINDOWS_32);
+            detect('RELEASES').should.be.exactly(platforms.WINDOWS_32);
         });
 
         it('should detect linux', function() {
-            platforms.detect('atom-amd64.deb').should.be.exactly(platforms.LINUX_64);
+            detect('atom-amd64.deb').should.be.exactly(platforms.LINUX_64);
         });
 
     });
 
     describe('Resolve', function() {
-        var version = {
+        const version = {
             platforms: [
                 {
                     "type": "osx_64",
@@ -81,18 +81,18 @@ describe('Platforms', function() {
 
 
         it('should resolve to best platform', function() {
-            platforms.resolve(version, 'osx').filename.should.be.exactly("test-3.3.1-darwin.dmg"),
-            platforms.resolve(version, 'win32').filename.should.be.exactly("AtomSetup.exe")
+            resolve(version, 'osx').filename.should.be.exactly("test-3.3.1-darwin.dmg"),
+            resolve(version, 'win32').filename.should.be.exactly("AtomSetup.exe")
         });
 
         it('should resolve to best platform with a preferred filetype', function() {
-            platforms.resolve(version, 'osx', {
+            resolve(version, 'osx', {
                 filePreference: ['.zip']
             }).filename.should.be.exactly("test-3.3.1-darwin-x64.zip")
         });
 
         it('should resolve to best platform with a wanted filetype', function() {
-            platforms.resolve(version, 'osx', {
+            resolve(version, 'osx', {
                 wanted: '.zip'
             }).filename.should.be.exactly("test-3.3.1-darwin-x64.zip")
         });
